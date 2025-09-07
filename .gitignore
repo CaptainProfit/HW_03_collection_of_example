@@ -1,0 +1,6 @@
+*.ko
+*.mod
+*.pptx
+*.o
+*.order
+*.mod.c
