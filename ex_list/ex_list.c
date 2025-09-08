@@ -7,16 +7,18 @@
 #include <linux/list.h>
 #include <linux/slab.h>
 
-#define BUFSIZE PAGE_SIZE
-
+#define BUFLEN 1024
 struct my_list_t {
 	struct list_head list_;
 	int value;
 } my_list_t;
 LIST_HEAD(my_list);
 static struct list_head* pointer = &my_list;
-static char tmp_buffer[BUFSIZE];
-
+static char tmp_buffer[BUFLEN];
+static struct kparam_string tmp_string = {
+	.maxlen	= BUFLEN,
+	.string	= tmp_buffer
+};
 //---------------------------------------
 // Print
 //---------------------------------------
@@ -48,7 +50,6 @@ static int pget_print(char *buffer, const struct kernel_param *kp) {
 	struct my_list_t *entry;
 	char* iter = tmp_buffer;
 	pr_info("forming list to file\n");
-	memset(tmp_buffer, 0, BUFSIZE);
 	*iter++ = '{';
 	if (pointer == &my_list) {
 		*iter++ = '[';
@@ -75,15 +76,14 @@ static int pget_print(char *buffer, const struct kernel_param *kp) {
 	*iter++ = '}';
 	*iter++ = '\n';
 	*iter++ = '\0';
-	memcpy(buffer, tmp_buffer, BUFSIZE);	
 	pr_info("printing list to file\n");
-	return param_get_string(tmp_buffer, kp);
+	return param_get_string(buffer, kp);
 }
 static const struct kernel_param_ops pops_print = {
 	.set = pset_print,
 	.get = pget_print,
 };
-module_param_cb(print, &pops_print, tmp_buffer, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+module_param_cb(print, &pops_print, &tmp_string, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 MODULE_PARM_DESC(print, "Print list");
 
 //---------------------------------------
