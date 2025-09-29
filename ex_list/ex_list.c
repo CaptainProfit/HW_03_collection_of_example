@@ -11,7 +11,7 @@
 struct my_list_t {
 	struct list_head list_;
 	int value;
-} my_list_t;
+};
 LIST_HEAD(my_list);
 static struct list_head* pointer = &my_list;
 static char tmp_buffer[BUFLEN];
@@ -45,6 +45,7 @@ static int pset_print(const char *val, const struct kernel_param *kp) {
 	printk(KERN_CONT "}\n");
 	return 0;
 }
+
 static int pget_print(char *buffer, const struct kernel_param *kp) {
 	bool first = true;
 	struct my_list_t *entry;
