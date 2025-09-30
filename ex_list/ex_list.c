@@ -14,42 +14,24 @@ struct my_list_t {
 };
 LIST_HEAD(my_list);
 static struct list_head* pointer = &my_list;
-static char tmp_buffer[BUFLEN];
-static struct kparam_string tmp_string = {
+static char list_buffer[BUFLEN];
+static char remove_buffer[BUFLEN];
+static struct kparam_string print_string = {
 	.maxlen	= BUFLEN,
-	.string	= tmp_buffer
+	.string	= list_buffer
 };
+static struct kparam_string remove_string = {
+	.maxlen	= BUFLEN,
+	.string	= remove_buffer
+};
+
 //---------------------------------------
 // Print
 //---------------------------------------
-static int pset_print(const char *val, const struct kernel_param *kp) {
-	bool first = true;
-	struct my_list_t *entry;
-	pr_info("{");
-	if (pointer == &my_list) {
-		printk(KERN_CONT "[]");
-		first = false;
-	}
-	list_for_each_entry(entry, &my_list, list_) {
-		if (!first) {
-			printk(KERN_CONT ", ");
-		}
-		first = false;
-		if (pointer == &entry->list_) {
-			printk(KERN_CONT "[%d]", entry->value);
-		}
-		else {
-			printk(KERN_CONT "%d", entry->value);
-		}
-	}
-	printk(KERN_CONT "}\n");
-	return 0;
-}
-
 static int pget_print(char *buffer, const struct kernel_param *kp) {
 	bool first = true;
 	struct my_list_t *entry;
-	char* iter = tmp_buffer;
+	char* iter = list_buffer;
 	pr_info("forming list to file\n");
 	*iter++ = '{';
 	if (pointer == &my_list) {
@@ -66,32 +48,32 @@ static int pget_print(char *buffer, const struct kernel_param *kp) {
 		if (pointer == &entry->list_) {
 			*iter++ = '[';
 		}
-		iter += snprintf(iter, (250 - (iter - tmp_buffer)), "%d", entry->value);
+		iter += snprintf(iter, (250 - (iter - list_buffer)), "%d", entry->value);
 		if (pointer == &entry->list_) {
 			*iter++ = ']';
 		}
-		if (iter - tmp_buffer > 240) {
+		if (iter - list_buffer > 240) {
 			break;
 		}
 	}
 	*iter++ = '}';
 	*iter++ = '\n';
 	*iter++ = '\0';
-	pr_info("printing list to file\n");
+	pr_info("%s", list_buffer);
 	return param_get_string(buffer, kp);
 }
 static const struct kernel_param_ops pops_print = {
-	.set = pset_print,
+	.set = NULL, //pset_print,
 	.get = pget_print,
 };
-module_param_cb(print, &pops_print, &tmp_string, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
-MODULE_PARM_DESC(print, "Print list");
+module_param_cb(print, &pops_print, &print_string, S_IRUSR|S_IRGRP);
+MODULE_PARM_DESC(print, "Prints list");
 
 //---------------------------------------
 // Add
 //---------------------------------------
 static int Add(int value) {
-	struct my_list_t* new_node = kmalloc(sizeof(my_list_t), GFP_USER);
+	struct my_list_t* new_node = kmalloc(sizeof(struct my_list_t), GFP_USER);
 	if (new_node == NULL) {
 		pr_err("Cant alloc memory\n");
 		return -1;
@@ -151,21 +133,23 @@ static int Remove(int* old_value) {
 	return 0;
 }
 
-static int pset_remove(const char *val, const struct kernel_param *kp) {
+static int pget_remove(char *buffer, const struct kernel_param *kp) {
 	int res;
 	int old_value;
+	memset(remove_buffer, 0, BUFLEN);
 	res = Remove(&old_value);
 	if (res == 0) {
 		pr_info("removed %d\n", old_value);
+		snprintf(buffer, BUFLEN, "%d\n", old_value);
 	}
-	return res;
+	return param_get_string(remove_buffer, kp);
 }
 static const struct kernel_param_ops pops_remove = {
-	.set = pset_remove,
-	.get = NULL,
+	.set = NULL, //pset_remove,
+	.get = pget_remove//NULL,
 };
-module_param_cb(remove, &pops_remove, NULL, S_IWUSR|S_IWGRP);
-MODULE_PARM_DESC(remove, "Insert element after pointer");
+module_param_cb(remove, &pops_remove, &remove_string, S_IRUSR|S_IRGRP);
+MODULE_PARM_DESC(remove, "Remove element after pointer");
 
 //---------------------------------------
 // Next
