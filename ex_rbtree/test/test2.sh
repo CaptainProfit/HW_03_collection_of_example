@@ -1,9 +1,13 @@
 #!/bin/bash
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
 filename=$(basename "$0")
+
 checknum=0
 checkok=0
 checklist=(
-"tree: {0, 1, 2, 3, 4, 5, 6, 7, 9, 10}"
+"tree: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"
 "tree: {1, 3, 5, 7, 9}"
 )
 
@@ -35,13 +39,14 @@ function test() {
     check $result
 }
 
-cd ..
 insmod ex_rbtree.ko
 test
+rmmod ex_rbtree
+
 echo $checkok/$checknum passed
 if [ $checkok -eq $checknum ]; then 
-    echo $filename:OK
+    echo -e "$filename:${GREEN}OK${NC}"
 else 
-    echo $filename:FAIL
+    echo -e "$filename:${RED}FAIL${NC}"
+    exit -1
 fi
-rmmod ex_rbtree
