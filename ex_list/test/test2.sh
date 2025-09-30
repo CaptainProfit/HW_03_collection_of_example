@@ -1,11 +1,25 @@
 #!/bin/bash
-cd ..
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
 filename=$(basename "$0")
+
 checknum=0
 checkok=0
 checklist=(
-"0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
-
+"{[], 4, 3, 2, 1}"
+"1"
+"2"
+"{[], 4, 3}"
+"{[], 8, 7, 6, 5, 4, 3}"
+"3"
+"4"
+"5"
+"{8, 7, [6]}"
+"6"
+"7"
+"8"
+"{[]}"
 )
 
 function check() {
@@ -15,49 +29,56 @@ function check() {
         ((checkok++))
     else
         echo $filename: part${checknum} failed
-        echo "    result: \"$conc\""
-        echo "    expect: \"${checklist[$checknum]}\""
+        echo "    result:  \"$conc\""
+        echo "    must be: \"${checklist[$checknum]}\""
     fi
     ((checknum++))
 }
 
 function test() {
-    P="/sys/module/ex_bitmap/parameters/"
-    for i in {0..227}; do
-        echo $i> $P/set
+    P="/sys/module/ex_list/parameters/"
+
+    echo "1 2 3 4" | tr ' ' '\n' | xargs -i echo {} > $P/add
+    result=`cat $P/print`
+    check $result
+
+    echo 1 >$P/prev
+    for i in {1..2}; do
+        result=`cat $P/remove`
+        check $result
+    done
+    echo 1 >$P/next
+    result=`cat $P/print`
+    check $result
+    
+    echo "5 6 7 8" | tr ' ' '\n' | xargs -i echo {} > $P/add
+    result=`cat $P/print`
+    check $result
+
+    echo 1 >$P/prev
+    for i in {1..3}; do
+        result=`cat $P/remove`
+        check $result
     done
     result=`cat $P/print`
     check $result
-
-    echo 0> $P/clear
-    result=`cat $P/print`
-    check $result
-
-    for i in {1..15}; do
-        echo $i> $P/clear
-    done
-    result=`cat $P/print`
-    check $result
-
-    for i in {16..63}; do
-        echo $i> $P/clear
-    done
-    result=`cat $P/print`
-    check $result
-
-    for i in {64..127}; do
-        echo $i> $P/clear
+    
+    for i in {1..3}; do
+        result=`cat $P/remove`
+        check $result
     done
     result=`cat $P/print`
     check $result
 }
 
-insmod ex_bitmap.ko
+insmod ex_list.ko
 test
+rmmod ex_list.ko
+
 echo $checkok/$checknum passed
 if [ $checkok -eq $checknum ]; then 
-    echo $filename:OK
+    echo -e "$filename:${GREEN}OK${NC}"
 else 
-    echo $filename:FAIL
+    echo -e "$filename:${RED}FAIL${NC}"
+    exit -1
 fi
-rmmod ex_bitmap.ko

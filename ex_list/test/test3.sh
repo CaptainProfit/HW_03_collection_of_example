@@ -1,6 +1,9 @@
 #!/bin/bash
-cd ..
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
 filename=$(basename "$0")
+
 checknum=0
 checkok=0
 checklist=(
@@ -53,28 +56,26 @@ function test() {
     for i in {1..3}; do
         result=`cat $P/remove`
         check $result
-        # 2 8 7
     done
     result=`cat $P/print`
     check $result
-    # {[6], 5, 1}
     
     for i in {1..3}; do
         result=`cat $P/remove`
         check $result
-        # 6 5 1
     done
     result=`cat $P/print`
     check $result
-    # {[]}
 }
 
 insmod ex_list.ko
 test
+rmmod ex_list.ko
+
 echo $checkok/$checknum passed
 if [ $checkok -eq $checknum ]; then 
-    echo $filename:OK
+    echo -e "$filename:${GREEN}OK${NC}"
 else 
-    echo $filename:FAIL
+    echo -e "$filename:${RED}FAIL${NC}"
+    exit -1
 fi
-rmmod ex_list.ko
