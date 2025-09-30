@@ -13,7 +13,7 @@ kbuild:
 	make -C $(KERNEL_DIR) M=$(PWD) modules
 
 check:
-	rmmod ex_queue;insmod ./ex_queue.ko
+	sudo bash -c "./test/testAll.sh"
 
 format:
 	$(CLANG_FORMAT) $(CLANG_FORMAT_FLAGS) $(FORMAT_FILES)
