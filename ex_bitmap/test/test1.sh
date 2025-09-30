@@ -4,8 +4,10 @@ filename=$(basename "$0")
 checknum=0
 checkok=0
 checklist=(
+"0b10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+"0b11111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+"0b11111111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000"
 "0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
-
 )
 
 function check() {
@@ -23,30 +25,24 @@ function check() {
 
 function test() {
     P="/sys/module/ex_bitmap/parameters/"
-    for i in {0..227}; do
-        echo $i> $P/set
-    done
-    result=`cat $P/print`
-    check $result
-
-    echo 0> $P/clear
+    echo 0 >$P/set
     result=`cat $P/print`
     check $result
 
     for i in {1..15}; do
-        echo $i> $P/clear
+        echo $i >$P/set
     done
     result=`cat $P/print`
     check $result
 
     for i in {16..63}; do
-        echo $i> $P/clear
+        echo $i >$P/set
     done
     result=`cat $P/print`
     check $result
 
     for i in {64..127}; do
-        echo $i> $P/clear
+        echo $i >$P/set
     done
     result=`cat $P/print`
     check $result
