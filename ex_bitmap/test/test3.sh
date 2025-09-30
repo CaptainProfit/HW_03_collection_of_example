@@ -1,6 +1,9 @@
 #!/bin/bash
-cd ..
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
 filename=$(basename "$0")
+
 checknum=0
 checkok=0
 checklist=(
@@ -43,10 +46,12 @@ function test() {
 
 insmod ex_bitmap.ko
 test
+rmmod ex_bitmap.ko
+
 echo $checkok/$checknum passed
 if [ $checkok -eq $checknum ]; then 
-    echo $filename:OK
+    echo -e "$filename:${GREEN}OK${NC}"
 else 
-    echo $filename:FAIL
+    echo -e "$filename:${RED}FAIL${NC}"
+    exit -1
 fi
-rmmod ex_bitmap.ko
