@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ..
-
+filename=$(basename "$0")
 checknum=0
 checkok=0
 checklist=(
@@ -22,10 +22,10 @@ checklist=(
 function check() {
     conc="$*"
     if [ "$conc" == "${checklist[$checknum]}" ]; then
-        echo test1, part${checknum} passed
+        echo $filename: part${checknum} passed
         ((checkok++))
     else
-        echo test1, part${checknum} failed
+        echo $filename: part${checknum} failed
         echo "    result:  \"$conc\""
         echo "    must be: \"${checklist[$checknum]}\""
     fi
@@ -38,6 +38,7 @@ function test() {
     result=`cat $P/print`
     check $result
     # {[], 4, 3, 2, 1}
+
     echo 1 >$P/next
     for i in {1..2}; do
         result=`cat $P/remove`
@@ -47,10 +48,12 @@ function test() {
     result=`cat $P/print`
     check $result
     # {[2], 1}
+
     echo "5 6 7 8" | tr ' ' '\n' | xargs -i echo {} > $P/add
     result=`cat $P/print`
     check $result
     # {[2], 8, 7, 6, 5, 1}
+
     for i in {1..3}; do
         result=`cat $P/remove`
         check $result
@@ -59,6 +62,7 @@ function test() {
     result=`cat $P/print`
     check $result
     # {[6], 5, 1}
+    
     for i in {1..3}; do
         result=`cat $P/remove`
         check $result
@@ -73,8 +77,8 @@ insmod ex_list.ko
 test
 echo $checkok/$checknum passed
 if [ $checkok -eq $checknum ]; then 
-    echo test1 OK
+    echo $filename:OK
 else 
-    echo test1 FAIL
+    echo $filename:FAIL
 fi
 rmmod ex_list.ko
