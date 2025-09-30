@@ -2,8 +2,8 @@
 
 | command                      | result | effect                           | syslog                                               |
 | ---------------------------- | ------ | -------------------------------- | ---------------------------------------------------- |
-| insmod ex_queue.ko           |        | загрузит модуль                  | ex_rbtree: loaded                                    |
-| rmmod ex_queue               |        | выгрузит модуль                  | ex_rbtree: unloaded                                  |
+| insmod ex_rbtree.ko          |        | загрузит модуль                  | ex_rbtree: loaded                                    |
+| rmmod ex_rbtree              |        | выгрузит модуль                  | ex_rbtree: unloaded                                  |
 | echo *новый элемент* >add    |        | добавляет новый элемент в дерево | ex_rbtree: added *новый элемент*                     |
 | echo *старый элемент* remove |        | убирает элемент из дерева        | ex_rbtree: removed *число под указателем*            |
 | cat print                    |        | выведет дерево                   | ex_rbtree: tree: {*элементы в дереве через запятую*} |
