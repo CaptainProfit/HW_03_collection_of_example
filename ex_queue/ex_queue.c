@@ -6,8 +6,16 @@
 
 #include <linux/kfifo.h>
 #include <linux/slab.h>
+
+#define BUFLEN 1024
+
 DECLARE_KFIFO (my_fifo, int, 16);
 static int mock_add;
+static char remove_buffer[BUFLEN];
+static struct kparam_string remove_string = {
+	.maxlen	= BUFLEN,
+	.string	= remove_buffer
+};
 //---------------------------------------
 // Print
 //---------------------------------------
@@ -71,20 +79,22 @@ static int Remove(int* old_value) {
 	return kfifo_out(&my_fifo, old_value, 1); 
 }
 
-static int pset_remove(const char *val, const struct kernel_param *kp) {
+static int pget_remove(char *buffer, const struct kernel_param *kp) {
 	int res;
 	int old_value;
 	res = Remove(&old_value);
+	memset(remove_buffer, 0, BUFLEN);
 	if (res > 0) {
 		pr_info("removed %d\n", old_value);
+		snprintf(remove_buffer, BUFLEN, "%d", old_value);
 	}
-	return strlen(val);
+	return param_get_string(buffer, kp);
 }
 static const struct kernel_param_ops pops_remove = {
-	.set = pset_remove,
-	.get = NULL,
+	.set = NULL,
+	.get = pget_remove
 };
-module_param_cb(remove, &pops_remove, NULL, S_IWUSR|S_IWGRP);
+module_param_cb(remove, &pops_remove, &remove_string, S_IRUSR|S_IRGRP);
 MODULE_PARM_DESC(remove, "Remove element in the end of queue");
 
 //---------------------------------------
